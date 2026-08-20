@@ -21,7 +21,7 @@ mongoose.connect(process.env.MONGODB_URI).then(()=> {
 });
 
 // -------------------------------->
-app.get("users", async (req,res)=> {
+app.get("/users", async (req,res)=> {
   try{
     const user = await User.find();
     res.json(user).send(user);
