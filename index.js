@@ -7,6 +7,7 @@ require("dotenv").config();
 app.use(express.json());
 app.use(cors());
 
+
 const User = require("./models/users");
 
 app.get("/", (req,res)=> {
@@ -26,7 +27,7 @@ app.get("users", async (req,res)=> {
     res.json(user).send(user);
 
   } catch (error) {
-    res.status(error);
+    res.status("err", error);
   }
 });
 
