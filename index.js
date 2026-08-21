@@ -1,6 +1,6 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require("cors");
+const mongoose = require('mongoose');
 const port = 5000;
 const app = express();
 require("dotenv").config();
@@ -34,7 +34,7 @@ app.post("/users", async (req,res)=> {
    if(existingUser){
     return res.status(400).json({error: 'User already create'});
    }else{
-    const users = new User(userdatas);
+    const users = new User({userdatas});
     const result = await users.save();  
     res.status(201).json(result);
    }
