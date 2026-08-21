@@ -45,9 +45,8 @@ app.post("/users", async (req,res)=> {
 
 // -------------------------------->
 app.get("/users/:usernumber", async (req,res)=> { 
- const {usernumber} = req.params.usernumber;
   try{
-    const user = await User.findOne({usernumber: usernumber});
+    const user = await User.findOne(req.params.usernumber);
     res.json(user).send(user);
 
   } catch (error) {
