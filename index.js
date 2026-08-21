@@ -21,6 +21,27 @@ mongoose.connect(process.env.MONGODB_URI).then(()=> {
 });
 
 // -------------------------------->
+// User data post : User Register
+app.post("/users", async (req,res)=> {
+  const userdatas = req.body;
+  const {usernumber} = userdatas;
+  const existingUser = await User.findOne({usernumber});
+  try{
+   if(existingUser){
+    return res.status(400).json({error: 'User already create'});
+   }else{
+    const users = new User(userdatas);
+    const result = await users.save();  
+    res.status(201).json(result);
+   }
+ }catch(err){
+   res.status(403).json({error: err});
+ }
+});
+
+
+
+// -------------------------------->
 app.get("/users", async (req,res)=> {
   try{
     const user = await User.find();
