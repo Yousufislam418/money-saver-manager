@@ -8,11 +8,12 @@ app.use(express.json());
 
 // cors use
 app.use(cors({ 
-  origin: ["http://127.0.0.1:5500","http://localhost:5500"]
+  origin: ["http://127.0.0.1:5500"]
 }));
 
-
+// get Schema
 const User = require("./models/users");
+const Transaction = require("./models/users");
 
 app.get("/", (req,res)=> {
   res.send("Server Activate");
@@ -44,17 +45,36 @@ app.post("/users", async (req,res)=> {
 });
 
 // -------------------------------->
+// get user one
 app.get("/users/:usernumber", async (req,res)=> { 
   try{
-    const user = await User.findOne({usernumber: req.params.usernumber}).select("-password");
+    const user = await User.findOne({usernumber: req.params.usernumber}).select("-password -pin");
     res.json(user).send(user);
 
   } catch (error) {
     res.status("err", error);
   }
 });
+// --------------------------------> 
+// transaction data post
+app.post("/transaction", async (req,res)=> { 
+ const txndatas = req.body;
+ const {usernumber, pin} = txndatas;
+ const existingUserPin = await User.findOne({usernumber: usernumber, pin: pin});
+  try{
+   if(existingUserPin){
+    const txndata = new User(txndatas);
+    const result = await txndata.save();  
+    res.status(201).json(result);
+   }else{
+    return res.status(400).json({error: "Transaction failed"});
+   }
+  } catch (error) {
+    res.status("err", error);
+  }
+});
 
-
+// Server Active
 app.listen(port, ()=> {
   console.log("Money saver server connected on port ", port);
 });
