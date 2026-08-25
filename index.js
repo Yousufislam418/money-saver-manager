@@ -25,6 +25,7 @@ mongoose.connect(process.env.MONGODB_URI).then(()=> {
   console.error("Mongodb connection error:", error);
 });
 
+// All Post Request ----------------------------------------------->
 // -------------------------------->
 // User data post : User Register
 app.post("/users", async (req,res)=> {
@@ -44,18 +45,7 @@ app.post("/users", async (req,res)=> {
  }
 });
 
-// -------------------------------->
-// get user one
-app.get("/users/:usernumber", async (req,res)=> { 
-  try{
-    const user = await User.findOne({usernumber: req.params.usernumber}).select("-password -pin");
-    res.json(user).send(user);
-
-  } catch (error) {
-    res.status("err", error);
-  }
-});
-// --------------------------------> 
+//--------------------------------> 
 // transaction data post
 app.post("/transaction", async (req,res)=> { 
  const txndatas = req.body;
@@ -73,6 +63,34 @@ app.post("/transaction", async (req,res)=> {
     res.status("err", error);
   }
 });
+
+// All get request ----------------------------------------------->
+// -------------------------------->
+// get user one
+app.get("/users/:usernumber", async (req,res)=> { 
+  try{
+    const user = await User.findOne({usernumber: req.params.usernumber}).select("-password -pin");
+    res.json(user).send(user);
+
+  } catch (error) {
+    res.status("err", error);
+  }
+});
+
+
+//--------------------------------> 
+// transaction get data
+app.get("/transaction/:usernumber", async (req,res)=> { 
+  try{
+    const txndata = await Transaction.findOne({usernumber: req.params.usernumber});
+    res.json(txndata).send(txndata);
+
+  } catch (error) {
+    res.status("err", error);
+  }
+});
+
+
 
 // Server Active
 app.listen(port, ()=> {

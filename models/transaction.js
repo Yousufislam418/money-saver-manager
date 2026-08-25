@@ -5,7 +5,7 @@ const transactionSchema = new mongoose.Schema({
     usernumber: {type: String},
     number: {type: String},
     amount: {type: String},
-    txn: {type: String},
+    txn: {type: Date, default: Date.now, expires: 60 * 60 * 24 * 90},
     status: {type: String},
     balance: {type: String}
 },{
