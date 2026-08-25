@@ -13,7 +13,7 @@ app.use(cors({
 
 // get Schema
 const User = require("./models/users");
-const Transaction = require("./models/users");
+const Transaction = require("./models/transaction");
 
 app.get("/", (req,res)=> {
   res.send("Server Activate");
