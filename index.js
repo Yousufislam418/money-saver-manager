@@ -53,7 +53,7 @@ app.post("/transaction", async (req,res)=> {
  const existingUserPin = await User.findOne({usernumber: usernumber, pin: pin});
   try{
    if(existingUserPin){
-    const txndata = new User(txndatas);
+    const txndata = new Transaction(txndatas);
     const result = await txndata.save();  
     res.status(201).json(result);
    }else{
