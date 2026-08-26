@@ -79,10 +79,10 @@ app.get("/users/:usernumber", async (req,res)=> {
 
 
 //--------------------------------> 
-// transaction get data
+// transaction get data by usernumber
 app.get("/transaction/:usernumber", async (req,res)=> { 
   try{
-    const txndata = await Transaction.findOne({usernumber: req.params.usernumber});
+    const txndata = await Transaction.find({usernumber: req.params.usernumber});
     res.json(txndata).send(txndata);
 
   } catch (error) {
