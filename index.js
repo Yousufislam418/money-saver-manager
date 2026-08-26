@@ -25,9 +25,12 @@ mongoose.connect(process.env.MONGODB_URI).then(()=> {
   console.error("Mongodb connection error:", error);
 });
 
-// All Post Request ----------------------------------------------->
+//--------------------------------------------------------------->
+// Post request 
+//--------------------------------------------------------------->
+
 // -------------------------------->
-// User data post : User Register
+// Post -> User Register
 app.post("/users", async (req,res)=> {
   const userdatas = req.body;
   const {usernumber} = userdatas;
@@ -64,8 +67,9 @@ app.post("/transaction", async (req,res)=> {
   }
 });
 
-// All get request ----------------------------------------------->
-// -------------------------------->
+//--------------------------------------------------------------->
+// Get request 
+//--------------------------------------------------------------->
 // get user one
 app.get("/users/:usernumber", async (req,res)=> { 
   try{
@@ -89,6 +93,30 @@ app.get("/transaction/:usernumber", async (req,res)=> {
     res.status("err", error);
   }
 });
+
+
+
+
+//-------------------------------------------------------------->
+// Update Request
+//-------------------------------------------------------------->
+
+// UPDATE -> user data update
+app.put('/users/:id', async(req,res)=> {
+ try{
+  const id = req.params.id;
+  const datas = req.body;   
+  const result = await User.findByIdAndUpdate(id, datas, {new: true});
+  res.json(result).send(result); 
+ }catch(error){
+  res.status(500).send(error);
+ }
+});
+
+
+//-------------------------------------------------------------->
+// Delete Request
+//-------------------------------------------------------------->
 
 
 
