@@ -8,7 +8,7 @@ app.use(express.json());
 const TransactionRoutes = require("./routes/transactionRoutes");
 //----------------------------------->
 // Withdrow
-app.use("/api/transactions", TransactionRoutes);
+app.use("/transactions", TransactionRoutes);
 
 
 // cors use

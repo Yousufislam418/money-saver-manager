@@ -58,6 +58,4 @@ if (user.balance < Number(amount)) {
 
 };
 
-
-
 module.exports = { withdraw };
