@@ -3,6 +3,7 @@ const cors = require("cors");
 const mongoose = require('mongoose');
 const port = 5000;
 const router = express.Router();
+
 const app = express();
 require("dotenv").config();
 app.use(express.json());
@@ -30,12 +31,18 @@ mongoose.connect(process.env.MONGODB_URI).then(()=> {
 //--------------------------------------------------------------->
 
 // ------------------------------------------------------>
-router.post("/withdraw", async (req, res) => {
+// Start 
+// =========================
+// Withdraw
+// =========================
+
+app.post("/transactions/withdraw", async (req, res) => {
 
   const { usernumber, pin, amount } = req.body;
 
   try {
 
+    // Input check
     if (!usernumber || !pin || !amount) {
       return res.status(400).json({
         message: "User number, PIN and amount are required"
@@ -50,16 +57,20 @@ router.post("/withdraw", async (req, res) => {
       });
     }
 
+
+    // Start MongoDB session
     const session = await mongoose.startSession();
 
     try {
 
       session.startTransaction();
 
-      // User find
+
+      // Find user using userNumber
       const user = await User
         .findOne({ usernumber: usernumber })
         .session(session);
+
 
       if (!user) {
         await session.abortTransaction();
@@ -68,6 +79,7 @@ router.post("/withdraw", async (req, res) => {
           message: "User not found"
         });
       }
+
 
       // PIN match
       if (user.pin !== pin) {
@@ -78,6 +90,7 @@ router.post("/withdraw", async (req, res) => {
         });
       }
 
+
       // Balance check
       if (user.balance < withdrawAmount) {
         await session.abortTransaction();
@@ -87,31 +100,39 @@ router.post("/withdraw", async (req, res) => {
         });
       }
 
-      // Balance update
+
+      // Update balance
       user.balance -= withdrawAmount;
 
       await user.save({ session });
 
-      // Transaction save
+
+      // Save transaction
       await Transaction.create(
         [{
-          userNumber: user.number,
+          usernumber: user.usernumber,
           amount: withdrawAmount,
           type: "withdraw"
         }],
         { session }
       );
 
+
+      // Everything successful
       await session.commitTransaction();
+
 
       res.status(200).json({
         message: "Withdraw successful",
         balance: user.balance
       });
 
+
     } catch (error) {
 
       await session.abortTransaction();
+
+      console.log(error);
 
       res.status(500).json({
         message: "Transaction failed"
@@ -120,9 +141,13 @@ router.post("/withdraw", async (req, res) => {
     } finally {
 
       session.endSession();
+
     }
 
+
   } catch (error) {
+
+    console.log(error);
 
     res.status(500).json({
       message: "Server error"
@@ -131,6 +156,14 @@ router.post("/withdraw", async (req, res) => {
   }
 
 });
+
+
+// =========================
+// Server
+// =========================
+
+
+// End
 
 
 // ------------------------------------------------------>
