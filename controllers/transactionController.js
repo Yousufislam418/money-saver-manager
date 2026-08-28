@@ -37,11 +37,11 @@ if (user.balance < Number(amount)) {
 
 
 // 4️⃣ Update balance
- user.balance -= Number(amount);
+ user.balance = user.balance - Number(amount);
  await user.save({ session });
 
 // 5️⃣ Save transaction
- await Transaction.create([{userid: user._id, amount: Number(amount), type: "withdraw"}], { session });
+ await Transaction.create([{amount: Number(amount), type: "withdraw"}], { session });
 
 // 6️⃣ Everything successful
 
