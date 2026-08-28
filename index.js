@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require("cors");
 const mongoose = require('mongoose');
 const port = 5000;
+const router = express.Router();
 const app = express();
 require("dotenv").config();
 app.use(express.json());
@@ -13,7 +14,6 @@ app.use(cors({
 // get Schema
 const User = require("./models/users");
 const Transaction = require("./models/transaction");
-const TransactionRoutes = require("./routes/transactionRoutes");
 
 app.get("/", (req,res)=> {
   res.send("Server Activate");
@@ -28,6 +28,113 @@ mongoose.connect(process.env.MONGODB_URI).then(()=> {
 //--------------------------------------------------------------->
 // Post request 
 //--------------------------------------------------------------->
+
+// ------------------------------------------------------>
+router.post("/withdraw", async (req, res) => {
+
+  const { usernumber, pin, amount } = req.body;
+
+  try {
+
+    if (!usernumber || !pin || !amount) {
+      return res.status(400).json({
+        message: "User number, PIN and amount are required"
+      });
+    }
+
+    const withdrawAmount = Number(amount);
+
+    if (withdrawAmount <= 0) {
+      return res.status(400).json({
+        message: "Invalid amount"
+      });
+    }
+
+    const session = await mongoose.startSession();
+
+    try {
+
+      session.startTransaction();
+
+      // User find
+      const user = await User
+        .findOne({ usernumber: usernumber })
+        .session(session);
+
+      if (!user) {
+        await session.abortTransaction();
+
+        return res.status(404).json({
+          message: "User not found"
+        });
+      }
+
+      // PIN match
+      if (user.pin !== pin) {
+        await session.abortTransaction();
+
+        return res.status(401).json({
+          message: "Invalid PIN"
+        });
+      }
+
+      // Balance check
+      if (user.balance < withdrawAmount) {
+        await session.abortTransaction();
+
+        return res.status(400).json({
+          message: "Your balance is low"
+        });
+      }
+
+      // Balance update
+      user.balance -= withdrawAmount;
+
+      await user.save({ session });
+
+      // Transaction save
+      await Transaction.create(
+        [{
+          userNumber: user.number,
+          amount: withdrawAmount,
+          type: "withdraw"
+        }],
+        { session }
+      );
+
+      await session.commitTransaction();
+
+      res.status(200).json({
+        message: "Withdraw successful",
+        balance: user.balance
+      });
+
+    } catch (error) {
+
+      await session.abortTransaction();
+
+      res.status(500).json({
+        message: "Transaction failed"
+      });
+
+    } finally {
+
+      session.endSession();
+    }
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: "Server error"
+    });
+
+  }
+
+});
+
+
+// ------------------------------------------------------>
+
 
 // -------------------------------->
 // Post -> User Register
@@ -51,7 +158,6 @@ app.post("/users", async (req,res)=> {
 //--------------------------------> 
 //----------------------------------->
 // Withdrow
-app.use("/transactions", TransactionRoutes);
 
 
 

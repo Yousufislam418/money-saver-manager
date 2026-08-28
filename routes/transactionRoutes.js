@@ -1,8 +1,8 @@
-const express = require("express");
+// const express = require("express");
 
-const router = express.Router();
+// const router = express.Router();
 
-const { withdraw } = require("../controllers/transactionController");
+// const { withdraw } = require("../controllers/transactionController");
 
-router.post("/withdraw", withdraw);
-module.exports = router;
+// router.post("/withdraw", withdraw);
+// module.exports = router;
