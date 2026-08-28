@@ -5,6 +5,11 @@ const port = 5000;
 const app = express();
 require("dotenv").config();
 app.use(express.json());
+const TransactionRoutes = require("./routes/transactionRoutes");
+//----------------------------------->
+// Withdrow
+app.use("/api/transactions", TransactionRoutes);
+
 
 // cors use
 app.use(cors({ 
