@@ -17,7 +17,7 @@ const { usernumber, pin, amount } = req.body;
  try {
  session.startTransaction();
 // 1️⃣ Find user
- const user = await User.findOne({usernumber: usernumber}).session(session);
+ const user = await User.findOne({ usernumber }).session(session);
   if (!user) {
    await session.abortTransaction();
    return res.status(404).json({message: "User not found"});

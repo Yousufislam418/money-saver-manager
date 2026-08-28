@@ -5,18 +5,15 @@ const port = 5000;
 const app = express();
 require("dotenv").config();
 app.use(express.json());
-const TransactionRoutes = require("./routes/transactionRoutes");
-
 // cors use
 app.use(cors({ 
   origin: ["http://127.0.0.1:5500"]
 }));
 
-//----------------------------------->
-
 // get Schema
 const User = require("./models/users");
 const Transaction = require("./models/transaction");
+const TransactionRoutes = require("./routes/transactionRoutes");
 
 app.get("/", (req,res)=> {
   res.send("Server Activate");
@@ -52,8 +49,10 @@ app.post("/users", async (req,res)=> {
 });
 
 //--------------------------------> 
-
+//----------------------------------->
+// Withdrow
 app.use("/transactions", TransactionRoutes);
+
 
 
 //--------------------------------> 
