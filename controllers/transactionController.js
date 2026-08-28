@@ -5,6 +5,7 @@ const Transaction = require("../models/transaction");
 const withdraw = async (req, res) => {
 const { usernumber, pin, amount } = req.body;
 
+
  if (!usernumber || !pin || !amount) {
   return res.status(400).json({message: "Number, pin and amount are required"});
  }
