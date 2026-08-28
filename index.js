@@ -5,6 +5,7 @@ const port = 5000;
 const app = express();
 require("dotenv").config();
 app.use(express.json());
+const TransactionRoutes = require("./routes/transactionRoutes");
 
 // cors use
 app.use(cors({ 
@@ -12,10 +13,6 @@ app.use(cors({
 }));
 
 //----------------------------------->
-const TransactionRoutes = require("./routes/transactionRoutes");
-app.use("/transactions", TransactionRoutes);
-
-
 
 // get Schema
 const User = require("./models/users");
@@ -53,6 +50,11 @@ app.post("/users", async (req,res)=> {
    res.status(403).json({error: err});
  }
 });
+
+//--------------------------------> 
+
+app.use("/transactions", TransactionRoutes);
+
 
 //--------------------------------> 
 // transaction data post
