@@ -5,20 +5,11 @@ const Transaction = require("../models/transaction");
 const withdraw = async (req, res) => {
 const { usernumber, pin, amount } = req.body;
 
-
- if (!usernumber || !pin || !amount) {
-  return res.status(400).json({message: "Number, pin and amount are required"});
- }
-
- if (Number(amount) <= 0) {
-   return res.status(400).json({message: "Invalid amount"});
- }
-
  const session = await mongoose.startSession();
  try {
  session.startTransaction();
 // 1️⃣ Find user
- const user = await User.findOne({ usernumber }).session(session);
+ const user = await User.findOne({usernumber: usernumber}).session(session);
   if (!user) {
    await session.abortTransaction();
    return res.status(404).json({message: "User not found"});
@@ -30,15 +21,8 @@ if (user.pin !== pin) {
   return res.status(401).json({message: "Invalid PIN"});
 }
 
-// 3️⃣ Balance check
-if (user.balance < Number(amount)) {
-  await session.abortTransaction();
-  return res.status(400).json({message: "Your balance is low"});
-}
-
-
 // 4️⃣ Update balance
- user.balance = user.balance - Number(amount);
+ user.balance = Number(user.balance) - Number(amount);
  await user.save({ session });
 
 // 5️⃣ Save transaction
