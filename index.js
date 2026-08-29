@@ -75,7 +75,7 @@ app.post("/transactions", async(req, res)=> {
   await user.save({ session });
 
 // Save transaction
- await Transaction.create([{...txndatas, amount: withdrawAmount}], { session });
+ await Transaction.create([{...txndatas, balance: user.balance}], { session });
 
 // Everything successful
  await session.commitTransaction();
