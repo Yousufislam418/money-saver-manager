@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const transactionSchema = new mongoose.Schema({
-    type: {type: String, enum: ["deposit", "withdraw"], required: true},
     brandname: {type: String},
     usernumber: {type: String, required: true},
     number: {type: String},
