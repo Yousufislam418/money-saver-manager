@@ -19,7 +19,7 @@ const Transaction = require("./models/transaction");
 app.get("/", (req,res)=> {
   res.send("Server Activate");
 });
-
+// mongoose connect
 mongoose.connect(process.env.MONGODB_URI).then(()=> {
   console.log("MongoDB connected Successfully");
 }).catch((error)=> {
@@ -108,6 +108,30 @@ app.post("/users", async (req,res)=> {
    }
  }catch(err){
    res.status(403).json({error: err});
+ }
+});
+//=========================>
+// Post -> Login
+//=========================>
+app.post("/login", async (req,res)=> {
+ const { usernumber, password } = req.body;
+ try {
+ const user = await User.findOne({ usernumber });
+ if(!user) {
+  return res.json({success: false, message: "User not found!"});
+ }
+// password match
+// const isMatch = await bcrypt.compare(password, user.password);
+ if(user.password !== password) { 
+  return res.json({success: false, message: "Wrong password"});
+ }
+// Login successful
+ res.json({success: true, message: "Login successful", 
+  user: {id: user._id, username: user.username, usernumber: user.usernumber, balance: user.balance}
+ });
+
+  } catch (error) {
+   res.status(500).json({success: false, message: "Server error"});
  }
 });
 
