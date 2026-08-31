@@ -113,13 +113,13 @@ app.post("/users", async (req,res)=> {
 //=========================>
 // Post -> Pin Match
 //=========================>
-app.post("/pin", async (req,res)=> {
+app.post("/userpin", async (req,res)=> {
   const {id, pin} = req.body;
-  const user = await User.findById(id);
+  const usr = await User.findById(id);
   try{
-    if(user.pin == pin) {
-      sessionStorage.setItem("User","Active");
+    if(usr.pin === pin) {
       res.status(201).json(result);
+      sessionStorage.setItem("User","Active");
     
   }else{
      return res.status(400).json({error: 'Pin not Matched'});
