@@ -115,7 +115,7 @@ app.post("/users", async (req,res)=> {
 //=========================>
 app.post("/pin", async (req,res)=> {
   const {id, pin} = req.body;
-  const user = await User.findById({id});
+  const user = await User.findById(id);
   try{
    if(user){ 
     if(user.pin === Number(pin)) {
