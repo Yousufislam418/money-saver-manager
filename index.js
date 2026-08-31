@@ -118,7 +118,7 @@ app.post("/pin", async (req,res)=> {
   const user = await User.findById({_id: id});
   try{
    if(user){ 
-    if(user.pin === pin) {
+    if(user.pin === Number(pin)) {
       sessionStorage.setItem("User","Active");
       res.status(201).json(result);
     }
