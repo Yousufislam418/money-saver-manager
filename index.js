@@ -128,12 +128,12 @@ app.post("/userpin", async(req, res)=> {
 
 });
 //=========================>
-// Post -> Login
+// Post -> Login 
 //=========================>
 app.post("/login", async (req,res)=> {
- const { userid, password } = req.body;
+ const { usernumber, password } = req.body;
  try {
- const user = await User.findById(userid);
+ const user = await User.findOne({ usernumber });
  if(!user) {
   return res.json({success: false, message: "User not found!"});
  }
