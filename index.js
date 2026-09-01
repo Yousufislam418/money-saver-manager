@@ -115,8 +115,8 @@ app.post("/users", async (req,res)=> {
 // Post -> Pin Match
 //=========================>
 app.post("/userpin", async (req,res)=> {
-  const pinId = req.body;
-  const matched = await User.findOne(pinId);
+  const {id, pin} = req.body;
+  const matched = await User.findOne({_id: id, pin: pin});
   try{
     if(!matched) {
       res.status(403).json({message: "Pin not matched"});
