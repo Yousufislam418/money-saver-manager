@@ -114,15 +114,13 @@ app.post("/users", async (req,res)=> {
 // Post -> Pin Match
 //=========================>
 app.post("/userpin", async (req,res)=> {
-  const {id, pin} = req.body;
-  const usr = await User.findById(id);
+  const pinId = req.body;
+  const matched = await User.findOne(pinId);
   try{
-    if(usr.pin === pin) {
-      res.status(201).json(result);
-      sessionStorage.setItem("User","Active");
-    
+    if(!matched) {
+      res.status(403).json({message: "Pin not matched"});
   }else{
-     return res.status(400).json({error: 'Pin not Matched'});
+     res.status(400).json({message: "Matched"});
    }
  }catch(err){
    res.status(403).json({error: err});
