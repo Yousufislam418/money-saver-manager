@@ -112,28 +112,28 @@ app.post("/users", async (req,res)=> {
  }
 });
 //=========================>
-// Post -> Pin Match
+// Post -> Pin Verify
 //=========================>
-app.post("/userpin", async (req,res)=> {
-  const {id, pin} = req.body;
-  const matched = await User.findOne({_id: id, pin: pin});
-  try{
-    if(!matched) {
-      res.status(403).json({message: "Pin not matched"});
-  }else{
-     res.status(400).json({message: "Matched"});
-   }
- }catch(err){
-   res.status(403).json({error: err});
- }
+app.post("/userpin", async(req, res)=> {
+ try {
+  const { userid, pin } = req.body;
+  const user = await User.findOne({ _id: userid, pin: pin });
+ if (!user) {
+   return res.status(401).json({ success: false, message: "Pin is incorrect" });
+  }
+ // Only send the information you need
+ res.json({ success: true });
+
+ } catch (error) { res.status(500).json({ success: false, message: "Server error" });}
+
 });
 //=========================>
 // Post -> Login
 //=========================>
 app.post("/login", async (req,res)=> {
- const { usernumber, password } = req.body;
+ const { userid, password } = req.body;
  try {
- const user = await User.findOne({ usernumber });
+ const user = await User.findById(userid);
  if(!user) {
   return res.json({success: false, message: "User not found!"});
  }
