@@ -16,6 +16,7 @@ app.use(cors());
 // get Schema
 const User = require("./models/users");
 const Transaction = require("./models/transaction");
+const Cards = require("./models/cards");
 
 app.get("/", (req,res)=> {
   res.send("Server Activate");
@@ -151,7 +152,25 @@ app.post("/login", async (req,res)=> {
    res.status(500).json({success: false, message: "Server error"});
  }
 });
-
+//=========================================>
+// Post -> Cards data Add
+//=========================================>
+app.post("/cards", async (req,res)=> {
+  const carddatas = req.body;
+  const { cardnumber } = carddatas;
+  const existingCard = await Cards.findOne({cardnumber});
+  try{
+   if(existingCard){
+    return res.status(400).json({error: 'This card already added'});
+   }else{
+    const newcards = new Cards(carddatas);
+    const result = await newcards.save();  
+    res.status(201).json(result);
+   }
+ }catch(err){
+   res.status(403).json({error: err});
+ }
+});
 //=================================================>
 // Get request 
 //=================================================>
