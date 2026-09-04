@@ -2,16 +2,14 @@ const express = require('express');
 const cors = require("cors");
 const mongoose = require('mongoose');
 const port = 5000;
-const router = express.Router();
 
 const app = express();
 require("dotenv").config();
 app.use(express.json());
 // cors use
-// app.use(cors({ 
-//   origin: ["http://127.0.0.1:5500"]
-// }));
-app.use(cors());
+app.use(cors({ 
+  origin: ["http://127.0.0.1:5500"]
+}));
 
 // get Schema
 const User = require("./models/users");
@@ -34,7 +32,6 @@ mongoose.connect(process.env.MONGODB_URI).then(()=> {
 //=========================>
 // Transaction data post
 //=========================>
-
 app.post("/transactions", async(req, res)=> {
  const txndatas = req.body;
  const { usernumber, pin, amount } = txndatas;
@@ -168,7 +165,7 @@ app.post("/cards", async (req,res)=> {
     res.status(201).json(result);
    }
  }catch(err){
-   res.status(403).json({error: err});
+   res.status(403).json({message: err});
  }
 });
 //=================================================>
