@@ -15,7 +15,7 @@ const transactionSchema = new mongoose.Schema({
 }
 );
 // txn create + 1
-cardsSchema.pre("save", async function(next) {
+transactionSchema.pre("save", async function(next) {
  if (!this.isNew) return next();
  const lastTxn = await this.constructor.findOne().sort({ txn: -1 });
   this.txn = lastTxn ? lastTxn.txn + 1 : 1;

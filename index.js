@@ -1,11 +1,14 @@
 const express = require('express');
-const app = express();
 const cors = require("cors");
-app.use(cors({origin: ["http://127.0.0.1:5500","http://127.0.0.1:5500/pages/home.html"]}));
 const mongoose = require('mongoose');
 const port = process.env.PORT || 3000;
+const app = express();
 require("dotenv").config();
 app.use(express.json());
+// cors use
+app.use(cors({ 
+  origin: ["http://127.0.0.1:5500"]
+}));
 
 // get Schema
 const User = require("./models/users");
