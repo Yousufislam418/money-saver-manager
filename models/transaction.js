@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
 
 const transactionSchema = new mongoose.Schema({
-    brandname: { type: String },
+    brandname: { type: String, required: true },
     usernumber: { type: String, required: true },
-    number: { type: String },
+    number: { type: String, required: true },
     amount: { type: Number, required: true },
     date: { type: Date, default: Date.now, expires: 7776000 },
-    status: { type: String },
-    balance: { type: Number },
+    status: { type: String, required: true },
+    balance: { type: Number, required: true },
     txn: { type: Number, unique: true }
 },{
     versionKey: false,

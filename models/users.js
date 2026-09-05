@@ -1,15 +1,15 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-    username: { type: String },
-    usernumber: { type: String, unique: true },
+    username: { type: String, required: true },
+    usernumber: { type: String, required: true, unique: true },
     email: { type: String },
-    password: { type: String },
+    password: { type: String, required: true },
     location: { type: String },
-    dates: { type: String },
+    date: { type: Number, default: Date.now },
     status: { type: String },
-    balance: { type: String },
-    pin: { type: String }
+    balance: { type: Number, required: true },
+    pin: { type: Number, required: true }
 },{
     versionKey: false,
     collection: 'users'
