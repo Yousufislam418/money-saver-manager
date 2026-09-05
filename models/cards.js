@@ -14,14 +14,9 @@ const cardsSchema = new mongoose.Schema({
 }
 );
 // Txn id create + 1
-cardsSchema.pre("save", async function (next) {
- try {
- if (!this.isNew) return next();
- const lastTxn = await this.constructor.findOne().sort({ txn: -1 });
- this.txn = lastTxn ? lastTxn.txn + 1 : 1;
-  next();
- } catch (error) {
-  next(error);
- }
+cardsSchema.pre("save", async function () {
+ if (!this.isNew) return;
+  const lastTxn = await this.constructor.findOne().sort({ txn: -1 });
+  this.txn = lastTxn ? lastTxn.txn + 1 : 1;
 });
 module.exports = mongoose.model("Cards", cardsSchema);
