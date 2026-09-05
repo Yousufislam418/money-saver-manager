@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
 const cardsSchema = new mongoose.Schema({
- cardbrandname: {type: String, required: true},
- cardnumber: {type: String, required: true, unique: true},
- amount: {type: Number, required: true},
+ cardbrandname: {type: String},
+ cardnumber: {type: String},
+ amount: {type: Number},
  date: {type: Number, default: Date.now},
  expires: {type: Date, expires: 2592000},
  status: {type: String, default: "available"},
