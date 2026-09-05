@@ -112,9 +112,9 @@ app.post("/users", async (req,res)=> {
 // Post -> Pin Verify
 //=========================>
 app.post("/userpin", async(req, res)=> {
+ const { userid, pin } = req.body;
+ const user = await User.findOne({ _id: userid, pin: pin });
  try {
-  const { userid, pin } = req.body;
-  const user = await User.findOne({ _id: userid, pin: pin });
  if (!user) {
    return res.status(401).json({ success: false, message: "Pin is incorrect" });
   }
@@ -161,7 +161,7 @@ app.post("/cards", async (req,res)=> {
    }else{
     const newcards = new Cards(carddatas);
     const result = await newcards.save();  
-    res.status(201).json(result);
+    res.status(201).json({message: result});
    }
  }catch(err){
    res.status(403).json({message: err});
@@ -172,12 +172,16 @@ app.post("/cards", async (req,res)=> {
 //=================================================>
 // get user one
 app.get("/users/:usernumber", async (req,res)=> { 
+  const user = await User.findOne({usernumber: req.params.usernumber}).select("-password -pin");
   try{
-    const user = await User.findOne({usernumber: req.params.usernumber}).select("-password -pin");
-    res.json(user).send(user);
+    if(!user) {
+      res.json({message: "User no found!"});
+    }else{
+     res.json(user).send(user);
+    }
 
   } catch (error) {
-    res.status("err", error);
+    res.json("message", error);
   }
 });
 

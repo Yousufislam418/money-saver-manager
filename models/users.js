@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
     location: {type: String},
     dates: {type: String},
     status: {type: String},
-    balance: {type: Number, default: 0},
+    balance: {type: String},
     pin: {type: String}
 },{
     versionKey: false,
