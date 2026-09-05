@@ -151,8 +151,6 @@ app.post("/login", async (req,res)=> {
 //=========================================>
 // Post -> Cards data Add
 //=========================================>
-const Cards = require("./models/cards");
-
 app.post("/cards", async (req, res) => {
  try {
  const carddatas = req.body;
@@ -181,12 +179,10 @@ app.get("/users/:usernumber", async (req,res)=> {
     }else{
      res.json(user).send(user);
     }
-
   } catch (error) {
     res.json("message", error);
   }
 });
-
 
 //--------------------------------> 
 // transaction get data by usernumber
