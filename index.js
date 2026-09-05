@@ -57,7 +57,7 @@ app.post("/transactions", async(req, res)=> {
  }
 
 // PIN match
- if (user.pin !== pin) {
+ if (user.pin !== Number(pin)) {
   await session.abortTransaction();
   return res.status(401).json({message: "Invalid PIN"});
  }
@@ -69,7 +69,7 @@ app.post("/transactions", async(req, res)=> {
  }
 
 // Update balance
- user.balance = user.balance - withdrawAmount;
+ user.balance = user.balance - Number(withdrawAmount);
   await user.save({ session });
 
 // Save transaction
