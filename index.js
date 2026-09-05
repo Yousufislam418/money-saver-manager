@@ -151,20 +151,22 @@ app.post("/login", async (req,res)=> {
 //=========================================>
 // Post -> Cards data Add
 //=========================================>
-app.post("/cards", async (req,res)=> {
-  const carddatas = req.body;
-  const { cardnumber } = carddatas;
-  const existingCard = await Cards.findOne({cardnumber});
-  try{
-   if(existingCard){
-    return res.status(400).json({error: 'This card already added'});
-   }else{
-    const newcards = new Cards(carddatas);
-    const result = await newcards.save();  
-    res.status(201).json({message: result});
-   }
- }catch(err){
-   res.status(403).json({message: err});
+const Cards = require("./models/cards");
+
+app.post("/cards", async (req, res) => {
+ try {
+ const carddatas = req.body;
+ const { cardnumber } = carddatas;
+ const existingCard = await Cards.findOne({ cardnumber });
+
+ if (existingCard) {
+   return res.status(400).json({ error: "This card already added" });
+ }
+  const newcards = new Cards(carddatas);
+  const result = await newcards.save();
+  res.status(201).json({ message: result });
+ } catch (err) {
+   res.status(500).json({ error: err.message });
  }
 });
 //=================================================>
