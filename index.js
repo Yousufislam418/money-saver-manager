@@ -184,17 +184,30 @@ app.get("/users/:usernumber", async (req,res)=> {
   }
 });
 
-//--------------------------------> 
-// transaction get data by usernumber
-app.get("/transaction/:usernumber", async (req,res)=> { 
-  try{
-    const txndata = await Transaction.find({usernumber: req.params.usernumber});
-    res.json(txndata).send(txndata);
+//=========================================>
+// Transaction data get
+//=========================================>
+app.get("/transactions/:usernumber", async (req, res) => {
+ try {
+  const { usernumber } = req.params;
+  const page = Number(req.query.page) || 1;
+  const limit = 10;
+  const skip = (page - 1) * limit;
+
+  const txndatas = await Transaction.find({ usernumber })
+   .sort({ date: -1 }).skip(skip).limit(limit);
+
+    const total = await Transaction.countDocuments({ usernumber });
+    const hasMore = skip + txndatas.length < total;
+    res.json({ txndatas, page, hasMore });
 
   } catch (error) {
-    res.status("err", error);
+    res.status(500).json({ error: "Server error" });
   }
 });
+
+
+
 
 
 

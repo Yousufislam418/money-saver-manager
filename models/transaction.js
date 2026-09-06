@@ -5,13 +5,13 @@ const transactionSchema = new mongoose.Schema({
     usernumber: { type: String, required: true },
     number: { type: String, required: true },
     amount: { type: Number, required: true },
-    date: { type: Date, default: Date.now, expires: 10 },
+    date: { type: Date, default: Date.now, expires: 7776000 },
     status: { type: String, required: true },
     balance: { type: Number, required: true },
     txn: { type: Number, unique: true }
 },{
     versionKey: false,
-    collection: "transaction"
+    collection: "transactions"
 }
 );
 // txn create + 1
