@@ -28,9 +28,9 @@ mongoose.connect(process.env.MONGODB_URI).then(()=> {
 //=============================================>
 // Post request 
 //==============================================>
-//=========================>
+//========================================>
 // Transaction data post
-//=========================>
+//========================================>
 app.post("/transactions", async(req, res)=> {
  const txndatas = req.body;
  const { usernumber, pin, amount } = txndatas;
@@ -39,12 +39,10 @@ app.post("/transactions", async(req, res)=> {
   if (!usernumber || !pin || !amount) {
    return res.status(400).json({message: "User number, PIN and amount are required" });
   }
-
  const withdrawAmount = Number(amount);
   if (withdrawAmount <= 0) {
     return res.status(400).json({message: "Invalid amount"});
   }
-
 // Start MongoDB session
  const session = await mongoose.startSession();
   try {
@@ -55,26 +53,21 @@ app.post("/transactions", async(req, res)=> {
     await session.abortTransaction();
     return res.status(404).json({message: "User not found"});
  }
-
 // PIN match
  if (user.pin !== Number(pin)) {
   await session.abortTransaction();
   return res.status(401).json({message: "Invalid PIN"});
  }
-
 // Balance check
  if (user.balance < withdrawAmount) {
    await session.abortTransaction();
    return res.status(400).json({message: "Your balance is low"});
  }
-
 // Update balance
  user.balance = user.balance - Number(withdrawAmount);
   await user.save({ session });
-
 // Save transaction
  await Transaction.create([{...txndatas, balance: user.balance}], { session });
-
 // Everything successful
  await session.commitTransaction();
   res.status(200).json({message: "Transaction Successfully", balance: user.balance});
@@ -199,7 +192,7 @@ app.get("/transactions/:usernumber", async (req, res) => {
 
     const total = await Transaction.countDocuments({ usernumber });
     const hasMore = skip + txndatas.length < total;
-    res.json({ txndatas, page, hasMore });
+    res.json({ txndatas, page, total, hasMore });
 
   } catch (error) {
     res.status(500).json({ error: "Server error" });
