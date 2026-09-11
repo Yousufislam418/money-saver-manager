@@ -159,7 +159,63 @@ app.post("/cards", async (req, res) => {
  } catch (err) {
    res.status(500).json({ error: err.message });
  }
-});
+}); 
+
+//===========================================>
+// BUY CARD
+//===========================================>
+app.post("/cards/buy", async (req, res) => {
+ try {
+  const { cardbrandname, usernumber, pin } = req.body;
+// Check input
+ if (!cardbrandname || !usernumber || !pin) {
+  return res.status(400).json({message: "Pin are required"});
+ }
+// Find User
+ const user = await User.findOne({usernumber: usernumber});
+ if (!user) {
+   return res.status(404).json({message: "User not found"});
+ }
+// PIN match
+ if (user.pin !== Number(pin)) {
+  return res.status(401).json({message: "Invalid PIN"});
+ }
+// Find Card
+ const card = await Cards.findOne({status: "available"});
+ if (!card) {
+   return res.status(404).json({ message: "Card not found" });
+ }
+// Card price
+ const price = Number(card.price);
+  if (isNaN(price) || price <= 0) {
+   return res.status(400).json({ message: "Invalid card price" });
+ }
+// Check Balance
+ if (Number(user.balance) < price) {
+  return res.status(400).json({ message: "Your balance is low" });
+ }
+// Remove money from user
+ user.balance = Number(user.balance) - price;
+// Assign card to user
+ card.usernumber = usernumber;
+ card.status = "sold";
+
+// Save User
+ await user.save();
+// Save Card
+ await card.save();
+// Create Transaction
+ await Transaction.create({brandname: cardbrandname, usernumber, number: card.cardnumber, amount: price, status: "Complete", balance: user.balance });
+
+// Success response
+ res.status(200).json({ message: "Card purchased successfully", cardnumber, price, balance: user.balance });
+
+ } catch (err) {
+   res.status(500).json({ message: "Server error", error: err.message });
+ }
+
+}); // BUY CARD End
+
 //=================================================>
 // Get request 
 //=================================================>

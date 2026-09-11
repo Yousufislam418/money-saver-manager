@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 
 const cardsSchema = new mongoose.Schema({
+ usernumber: { type: String },
  cardbrandname: { type: String, required: true },
  cardnumber: { type: String, required: true, unique: true },
- amount: { type: Number, required: true },
+ price: { type: Number, required: true },
  date: { type: Number, default: Date.now },
  expires: { type: Date, expires: 2592000 },
  status: { type: String, default: "available" },
@@ -12,7 +13,7 @@ const cardsSchema = new mongoose.Schema({
     versionKey: false,
     collection: "cards"
 }
-);
+); 
 // Txn id create + 1
 cardsSchema.pre("save", async function () {
  if (!this.isNew) return;
