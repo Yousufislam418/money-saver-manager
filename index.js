@@ -181,7 +181,7 @@ app.post("/cards/buy", async (req, res) => {
   return res.status(401).json({message: "Invalid PIN"});
  }
 // Find Card
- const card = await Cards.findOne({status: "available"});
+ const card = await Cards.findOne({cardbrandname: cardbrandname, status: "available"});
  if (!card) {
    return res.status(404).json({ message: "Card not found" });
  }
