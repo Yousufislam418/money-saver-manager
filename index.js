@@ -206,10 +206,11 @@ app.post("/cards/buy", async (req, res) => {
 // Save Card
  await card.save();
 // Create Transaction
- await Transaction.create({brandname: cardbrandname, usernumber, number: cardnumber, amount: price, status: "Complete", balance: user.balance });
+ const newcarddatas = {brandname: cardbrandname, usernumber, number: cardnumber, amount: price, status: "Complete", balance: user.balance };
+ await Transaction.create(newcarddatas);
 
 // Success response
- res.status(200).json({ message: "Card purchased successfully", cardnumber, price, balance: user.balance });
+ res.status(200).json({ message: "Card purchased successfully", carddatas: newcarddatas});
 
  } catch (err) {
    res.status(500).json({ message: "Server error", error: err.message });
