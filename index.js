@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require("cors");
 const mongoose = require('mongoose');
 const port = process.env.PORT || 3000;
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const app = express();
 require("dotenv").config();
 app.use(express.json());
@@ -9,28 +11,57 @@ app.use(express.json());
 app.use(cors({ 
   origin: ["http://127.0.0.1:5500"]
 }));
-
+//======================================================> 
+// Get token from dotenv file
+//======================================================> 
+const JWT_SECRET = process.env.SECRET_TOKEN;
+//======================================================>
+// JWT Verify Middleware
+//======================================================>
+function jwtverify(req, res, next) {
+ try {
+ const authHeader = req.headers.authorization;
+ if (!authHeader) {
+  return res.status(401).json({ message: "Token required" });
+ }
+// Bearer TOKEN
+ const token = authHeader.split(" ")[1];
+ if (!token) {
+  return res.status(401).json({ message: "Token required" });
+ }
+// Verify token
+ const decoded = jwt.verify(token, JWT_SECRET);
+// usernumber -> this usernumber will be use next route
+ req.usernumber = decoded.usernumber;
+ next();
+// catch -> get error message
+ } catch (err) {
+  return res.status(401).json({ message: "Invalid or expired token" });
+ }
+} // jwtverify end
+//======================================================>
 // get Schema
+//======================================================>
 const User = require("./models/users");
 const Transaction = require("./models/transaction");
 const Cards = require("./models/cards");
-
-app.get("/", (req,res)=> {
+//======================================================>
+// Server response test
+//======================================================>
+app.get("/", (req, res)=> {
   res.send("Server Activate");
 });
-// mongoose connect
+//======================================================>
+// Mongoose connect
+//======================================================>
 mongoose.connect(process.env.MONGODB_URI).then(()=> {
   console.log("MongoDB connected Successfully");
 }).catch((error)=> {
   console.error("Mongodb connection error:", error);
-});
-
-//=============================================>
-// Post request 
-//==============================================>
-//========================================>
+}); // mongoose connect end
+//======================================================>
 // Transaction data post
-//========================================>
+//======================================================>
 app.post("/transactions", async(req, res)=> {
  const txndatas = req.body;
  const { usernumber, pin, amount } = txndatas;
@@ -83,25 +114,6 @@ app.post("/transactions", async(req, res)=> {
 });
 
 //=========================>
-// Post -> User Register
-//=========================>
-app.post("/users", async (req,res)=> {
-  const userdatas = req.body;
-  const {usernumber} = userdatas;
-  const existingUser = await User.findOne({usernumber});
-  try{
-   if(existingUser){
-    return res.status(400).json({error: 'User already create'});
-   }else{
-    const users = new User(userdatas);
-    const result = await users.save();  
-    res.status(201).json(result);
-   }
- }catch(err){
-   res.status(403).json({error: err});
- }
-});
-//=========================>
 // Post -> Pin Verify
 //=========================>
 app.post("/userpin", async(req, res)=> {
@@ -117,30 +129,75 @@ app.post("/userpin", async(req, res)=> {
  } catch (error) { res.status(500).json({ success: false, message: "Server error" });}
 
 });
-//=========================>
-// Post -> Login 
-//=========================>
-app.post("/login", async (req,res)=> {
- const { usernumber, password } = req.body;
- try {
- const user = await User.findOne({ usernumber });
- if(!user) {
-  return res.json({success: false, message: "User not found!"});
- }
-// password match
-// const isMatch = await bcrypt.compare(password, user.password);
- if(user.password !== password) { 
-  return res.json({success: false, message: "Wrong password"});
- }
-// Login successful
- res.json({success: true, message: "Login successful", 
-  user: {id: user._id, username: user.username, usernumber: user.usernumber, balance: user.balance}
- });
 
-  } catch (error) {
-   res.status(500).json({success: false, message: "Server error"});
+//======================================================>
+//  USER REGISTER 
+//======================================================>
+// =========================
+app.post("/register", async (req, res) => {
+ try {
+  const userdatas = req.body;
+  const { usernumber, password, pin } = userdatas;
+// Check user already exists
+  const existingUser = await User.findOne({ usernumber });
+  if (existingUser) {
+    return res.status(400).json({ message: "User already exists" });
+  }
+// Password hash
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPin = await bcrypt.hash(pin, 10);
+// Save user
+ const newuserdatas = {...userdatas, password: hashedPassword, pin: hashedPin };
+  const user = new User(newuserdatas);
+   await user.save();
+  res.status(201).json({ message: "Registration successful" });
+// catch -> get error message
+ } catch (err) { 
+  res.status(500).json({ message: "Server error" });
  }
-});
+}); // Register end
+//======================================================>
+// Login
+//======================================================> 
+app.post("/login", async (req, res) => {
+ try {
+ const { usernumber, password } = req.body;
+// find user
+ const user = await User.findOne({ usernumber });
+ if (!user) {
+  return res.status(401).json({ message: "User not found!" });
+ }
+ const passwordMatch = await bcrypt.compare( password, user.password );
+ if (!passwordMatch) {
+  return res.status(401).json({ message: "Invalid password" });
+ }
+ const token = jwt.sign({ usernumber: user.usernumber }, JWT_SECRET, { expiresIn: "30d" });
+ res.json({ message: "Login successful", token });
+// catch -> get error message
+ } catch (err) {
+  res.status(500).json({ message: "Server error" });
+ }
+}); // Login end
+//======================================================> 
+// Protected Profile Route
+//======================================================> 
+app.get("/profile", jwtverify, async (req, res)=> {
+ try {
+// get usernumber from jwtverify 
+ const usernumber = req.usernumber;
+// find user to database 
+ const user = await User.findOne({ usernumber: usernumber }).select("-password -pin");
+ if (!user) {
+  return res.status(404).json({ message: "User not found" });
+ }
+ res.json({ message: "You are authorized", userdatas: user });
+ } catch (err) {
+  res.status(500).json({ message: "Server error" });
+ }
+}); // Profile end
+//======================================================>
+//======================================================>
+
 //=========================================>
 // Post -> Cards data Add
 //=========================================>
@@ -221,19 +278,9 @@ app.post("/cards/buy", async (req, res) => {
 //=================================================> 
 // Get request 
 //=================================================>
-// get user one
-app.get("/users/:usernumber", async (req,res)=> { 
-  const user = await User.findOne({usernumber: req.params.usernumber}).select("-password -pin");
-  try{
-    if(!user) {
-      res.json({message: "User no found!"});
-    }else{
-     res.json(user).send(user);
-    }
-  } catch (error) {
-    res.json("message", error);
-  }
-});
+
+
+
 
 //=========================================>
 // Transaction data get
