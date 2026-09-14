@@ -133,7 +133,6 @@ app.post("/userpin", async(req, res)=> {
 //======================================================>
 //  USER REGISTER 
 //======================================================>
-// =========================
 app.post("/register", async (req, res) => {
  try {
   const userdatas = req.body;
@@ -152,8 +151,8 @@ app.post("/register", async (req, res) => {
    await user.save();
   res.status(201).json({ message: "Registration successful" });
 // catch -> get error message
- } catch (err) { 
-  res.status(500).json({ message: "Server error" });
+ } catch (error) { 
+  res.status(500).json({ message: error.message });
  }
 }); // Register end
 //======================================================>
