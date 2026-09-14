@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
     date: { type: Number, default: Date.now },
     status: { type: String },
     balance: { type: Number, required: true },
-    pin: { type: Number, required: true }
+    pin: { type: String, required: true }
 },{
     versionKey: false,
     collection: 'users'

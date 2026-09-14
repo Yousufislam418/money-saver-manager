@@ -156,7 +156,7 @@ app.post("/register", async (req, res) => {
  }
 }); // Register end
 //======================================================>
-// Login
+// Login 
 //======================================================> 
 app.post("/login", async (req, res) => {
  try {
@@ -173,8 +173,8 @@ app.post("/login", async (req, res) => {
  const token = jwt.sign({ usernumber: user.usernumber }, JWT_SECRET, { expiresIn: "30d" });
  res.json({ message: "Login successful", token });
 // catch -> get error message
- } catch (err) {
-  res.status(500).json({ message: "Server error" });
+ } catch (error) {
+  res.status(500).json({ message: error.message });
  }
 }); // Login end
 //======================================================> 
@@ -190,8 +190,8 @@ app.get("/profile", jwtverify, async (req, res)=> {
   return res.status(404).json({ message: "User not found" });
  }
  res.json({ message: "You are authorized", userdatas: user });
- } catch (err) {
-  res.status(500).json({ message: "Server error" });
+ } catch (error) {
+  res.status(500).json({ message: error.message });
  }
 }); // Profile end
 //======================================================>
