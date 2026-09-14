@@ -18,7 +18,7 @@ const JWT_SECRET = process.env.SECRET_TOKEN;
 //======================================================>
 // JWT Verify Middleware
 //======================================================>
-function jwtverify(req, res, next) {
+function verifyToken(req, res, next) {
  try {
  const authHeader = req.headers.authorization;
  if (!authHeader) {
@@ -62,13 +62,13 @@ mongoose.connect(process.env.MONGODB_URI).then(()=> {
 //======================================================>
 // Transaction data post
 //======================================================>
-app.post("/transactions", async(req, res)=> {
+app.post("/transactions", verifyToken, async(req, res)=> {
  const txndatas = req.body;
- const { usernumber, pin, amount } = txndatas;
+ const { pin, amount } = txndatas;
   try {
 // Input check
-  if (!usernumber || !pin || !amount) {
-   return res.status(400).json({message: "User number, PIN and amount are required" });
+  if (!pin || !amount) {
+   return res.status(400).json({message: "Pin and Amount are required"});
   }
  const withdrawAmount = Number(amount);
   if (withdrawAmount <= 0) {
@@ -78,16 +78,16 @@ app.post("/transactions", async(req, res)=> {
  const session = await mongoose.startSession();
   try {
    session.startTransaction();
-// Find user using userNumber
- const user = await User.findOne({ usernumber: usernumber }).session(session);
+// Find user using usernumber
+ const user = await User.findOne({ usernumber: req.usernumber }).session(session);
   if (!user) {
     await session.abortTransaction();
     return res.status(404).json({message: "User not found"});
  }
-// PIN match
- if (user.pin !== Number(pin)) {
-  await session.abortTransaction();
-  return res.status(401).json({message: "Invalid PIN"});
+// Pin match
+ const pinMatch = await bcrypt.compare(pin, user.pin);
+ if(!pinMatch) {
+   return res.status(401).json({message: "Wrong Pin"});
  }
 // Balance check
  if (user.balance < withdrawAmount) {
@@ -149,7 +149,7 @@ app.post("/register", async (req, res) => {
  const newuserdatas = {...userdatas, password: hashedPassword, pin: hashedPin };
   const user = new User(newuserdatas);
    await user.save();
-  res.status(201).json({ message: "Registration successful" });
+  res.status(201).json({ message: "Registration Successfully" });
 // catch -> get error message
  } catch (error) { 
   res.status(500).json({ message: error.message });
@@ -171,18 +171,18 @@ app.post("/login", async (req, res) => {
   return res.status(401).json({ message: "Invalid password" });
  }
  const token = jwt.sign({ usernumber: user.usernumber }, JWT_SECRET, { expiresIn: "30d" });
- res.json({ message: "Login successful", token });
+ res.json({ message: "Login Successfully", userdatas: user, token: token });
 // catch -> get error message
  } catch (error) {
   res.status(500).json({ message: error.message });
  }
-}); // Login end
+}); // Login end 
 //======================================================> 
 // Protected Profile Route
 //======================================================> 
-app.get("/profile", jwtverify, async (req, res)=> {
+app.get("/profile", verifyToken, async (req, res)=> {
  try {
-// get usernumber from jwtverify 
+// get usernumber from tokenVerify 
  const usernumber = req.usernumber;
 // find user to database 
  const user = await User.findOne({ usernumber: usernumber }).select("-password -pin");
