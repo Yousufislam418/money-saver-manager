@@ -22,12 +22,12 @@ function verifyToken(req, res, next) {
  try {
  const authHeader = req.headers.authorization;
  if (!authHeader) {
-  return res.status(401).json({ message: "Token required" });
+  return res.status(401).json({ message: "Token Required" });
  }
 // Bearer TOKEN
  const token = authHeader.split(" ")[1];
  if (!token) {
-  return res.status(401).json({ message: "Token required" });
+  return res.status(401).json({ message: "Token Required" });
  }
 // Verify token
  const decoded = jwt.verify(token, JWT_SECRET);
@@ -36,7 +36,7 @@ function verifyToken(req, res, next) {
  next();
 // catch -> get error message
  } catch (err) {
-  return res.status(401).json({ message: "Invalid or expired token" });
+  return res.status(401).json({ message: "Invalid or expire token" });
  }
 } // jwtverify end
 //======================================================>
@@ -59,6 +59,7 @@ mongoose.connect(process.env.MONGODB_URI).then(()=> {
 }).catch((error)=> {
   console.error("Mongodb connection error:", error);
 }); // mongoose connect end
+
 //======================================================>
 // Transaction data post
 //======================================================>
@@ -98,10 +99,10 @@ app.post("/transactions", verifyToken, async(req, res)=> {
  user.balance = user.balance - Number(withdrawAmount);
   await user.save({ session });
 // Save transaction
- await Transaction.create([{...txndatas, balance: user.balance}], { session });
+ const result = await Transaction.create([{...txndatas, usernumber: user.usernumber, balance: user.balance}], { session });
 // Everything successful
- await session.commitTransaction();
-  res.status(200).json({message: "Transaction Successfully", balance: user.balance});
+ await session.commitTransaction(); 
+  res.status(200).json({message: "Transaction Successfully", txndata: result, balance: user.balance});
  } catch (error) {
   await session.abortTransaction();
   res.status(500).json({message: "Transaction failed"});
@@ -109,10 +110,10 @@ app.post("/transactions", verifyToken, async(req, res)=> {
   session.endSession();
  }
  } catch (error) {
-   res.status(500).json({message: "Server error"});
+   res.status(500).json({message: error.message});
   }
-});
-
+}); // Transactions End 
+ 
 //=========================>
 // Post -> Pin Verify
 //=========================>
@@ -189,7 +190,7 @@ app.get("/profile", verifyToken, async (req, res)=> {
  if (!user) {
   return res.status(404).json({ message: "User not found" });
  }
- res.json({ message: "You are authorized", userdatas: user });
+ res.json({ message: "You are Authorized", userdatas: user });
  } catch (error) {
   res.status(500).json({ message: error.message });
  }
