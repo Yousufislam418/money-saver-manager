@@ -356,15 +356,15 @@ app.get("/AdminResellers", verifyToken, async (req, res)=> {
  const limit = 20;
  const skip = (page - 1) * limit;
 // find reseller to database  
- const resellers = await User.find({ usernumber: usernumber }).select("-password -pin").sort({ date: -1 }).skip(skip).limit(limit);
+ const resellers = await User.find().select("-password -pin").sort({ date: -1 }).skip(skip).limit(limit);
  if (!resellers) {
   return res.status(404).json({ message: "Reseller not found" });
  } 
- const total = await User.countDocuments({ usernumber });
+ const total = await User.countDocuments();
  const hasMore = skip + resellers.length < total;
  res.json({ message: "You are Authorized", Resellers: resellers, page, total, hasMore });
  } catch (error) {
-  res.status(500).json({ message: error.message });
+  res.status(500).json({ message: error.message }); 
  }
 }); // Resellers get data end
 //======================================================>
