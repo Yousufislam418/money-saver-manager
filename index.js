@@ -343,7 +343,8 @@ app.get("/AdminTransactions", verifyToken, async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-// Protected Profile Route
+//======================================================> 
+// Resellers data get from User 
 //======================================================> 
 app.get("/AdminResellers", verifyToken, async (req, res)=> {
  try {
@@ -351,12 +352,17 @@ app.get("/AdminResellers", verifyToken, async (req, res)=> {
  if(Number(usernumber) !== Number("01722849877")) {
   return res.json({ message: "Admin number incorrect!" });
  }
+ const page = Number(req.query.page) || 1;
+ const limit = 20;
+ const skip = (page - 1) * limit;
 // find reseller to database  
- const reseller = await User.find({ usernumber: usernumber }).select("-password -pin");
- if (!reseller) {
+ const resellers = await User.find({ usernumber: usernumber }).select("-password -pin").sort({ date: -1 }).skip(skip).limit(limit);
+ if (!resellers) {
   return res.status(404).json({ message: "Reseller not found" });
- }
- res.json({ message: "You are Authorized", Resellers: reseller });
+ } 
+ const total = await User.countDocuments({ usernumber });
+ const hasMore = skip + resellers.length < total;
+ res.json({ message: "You are Authorized", Resellers: resellers, page, total, hasMore });
  } catch (error) {
   res.status(500).json({ message: error.message });
  }
