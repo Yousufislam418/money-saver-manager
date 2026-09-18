@@ -282,19 +282,16 @@ app.post("/cards/buy", async (req, res) => {
 //=========================================>
 // Transaction data get
 //=========================================>
-app.get("/transactions/:usernumber", async (req, res) => {
+app.get("/transactions", async (req, res) => {
  try {
-  const { usernumber } = req.params;
+  const usernumber = req.usernumber;
   const page = Number(req.query.page) || 1;
   const limit = 10;
   const skip = (page - 1) * limit;
-
   const txndatas = await Transaction.find({ usernumber }).sort({ date: -1 }).skip(skip).limit(limit);
-
-    const total = await Transaction.countDocuments({ usernumber });
-    const hasMore = skip + txndatas.length < total;
-    res.json({ txndatas, page, total, hasMore });
-
+  const total = await Transaction.countDocuments({ usernumber });
+  const hasMore = skip + txndatas.length < total;
+  res.json({ txndatas, page, total, hasMore });
   } catch (error) {
     res.status(500).json({ error: "Server error" });
   }
@@ -323,7 +320,7 @@ app.put('/users/:id', async(req,res)=> {
 });
 
 //=========================================>
-// Admin Section
+// Admin Section 
 //=========================================>
 //=========================================>
 // Admin Transaction data get
@@ -335,21 +332,36 @@ app.get("/AdminTransactions", verifyToken, async (req, res) => {
   const page = Number(req.query.page) || 1;
   const limit = 20;
   const skip = (page - 1) * limit;
-
   const admintxndatas = await Transaction.find().sort({ date: -1 }).skip(skip).limit(limit);
-
-    const total = await Transaction.countDocuments({ usernumber });
-    const hasMore = skip + admintxndatas.length < total;
-    res.json({ admintxndatas, page, total, hasMore });
+  const total = await Transaction.countDocuments({ usernumber });
+  const hasMore = skip + admintxndatas.length < total;
+  res.json({ admintxndatas, page, total, hasMore });
  }else{
   res.json({ message: "Admin number incorrect!" });
  }
-
   } catch (error) {
     res.status(500).json({ error: "Server error" });
   }
 });
-
+// Protected Profile Route
+//======================================================> 
+app.get("/AdminResellers", verifyToken, async (req, res)=> {
+ try {
+ const usernumber = req.usernumber;
+ if(Number(usernumber) !== Number("01722849877")) {
+  return res.json({ message: "Admin number incorrect!" });
+ }
+// find reseller to database  
+ const reseller = await User.find({ usernumber: usernumber }).select("-password -pin");
+ if (!reseller) {
+  return res.status(404).json({ message: "Reseller not found" });
+ }
+ res.json({ message: "You are Authorized", Resellers: reseller });
+ } catch (error) {
+  res.status(500).json({ message: error.message });
+ }
+}); // Resellers get data end
+//======================================================>
 //-------------------------------------------------------------->
 // Delete Request
 //-------------------------------------------------------------->
