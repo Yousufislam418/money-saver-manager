@@ -368,6 +368,41 @@ app.get("/AdminResellers", verifyToken, async (req, res)=> {
  }
 }); // Resellers get data end
 //======================================================>
+// Resellers Add Balance 
+//======================================================> 
+app.patch("/AdminResellersAddBalance", verifyToken, async (req, res) => {
+ try {
+  const { pin, amount } = req.body;
+  const usernumber = req.usernumber;
+
+ if (!usernumber || !pin || amount === undefined) {
+   return res.status(400).json({ message: "usernumber, pin and amount are required" });
+ }
+
+ const addAmount = Number(amount);
+ if (!Number.isFinite(addAmount) || addAmount <= 0) {
+   return res.status(400).json({ message: "Invalid amount" });
+ }
+
+ const user = await User.findOne({ usernumber });
+ if (!user) {
+   return res.status(404).json({ message: "User not found" });
+ } 
+
+ const pinMatch = await bcrypt.compare(pin, user.pin);
+ if (!pinMatch) { 
+  return res.status(401).json({ message: "Invalid PIN" });
+ }
+   user.balance += addAmount;
+   await user.save();
+
+ res.status(200).json({ message: "Update balance Successfully", balance: user.balance });
+ } catch (err) {
+  res.status(500).json({ message: err });
+  }
+}); // ResellersAddBalance end
+//======================================================>
+//======================================================>
 //-------------------------------------------------------------->
 // Delete Request
 //-------------------------------------------------------------->
