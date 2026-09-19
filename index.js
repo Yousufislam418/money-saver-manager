@@ -372,8 +372,7 @@ app.get("/AdminResellers", verifyToken, async (req, res)=> {
 //======================================================> 
 app.patch("/AdminResellersAddBalance", verifyToken, async (req, res) => {
  try {
-  const { pin, amount } = req.body;
-  const usernumber = req.usernumber;
+  const { usernumber, pin, amount } = req.body;
 
  if (!usernumber || !pin || amount === undefined) {
    return res.status(400).json({ message: "usernumber, pin and amount are required" });
@@ -392,7 +391,8 @@ app.patch("/AdminResellersAddBalance", verifyToken, async (req, res) => {
  const pinMatch = await bcrypt.compare(pin, user.pin);
  if (!pinMatch) { 
   return res.status(401).json({ message: "Invalid PIN" });
- }
+ } 
+ 
    user.balance += addAmount;
    await user.save();
 
