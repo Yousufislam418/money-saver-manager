@@ -411,7 +411,7 @@ app.patch("/AdminResellersAddBalance", TokenVerify, AdminVerify, async (req, res
    return res.status(400).json({ message: "Invalid amount" });
  }
 // ---
- const user = await User.findByIdAndUpdate( id , { $inc: { balance: addAmount } }, { new: true });
+ const user = await User.findByIdAndUpdate( userid , { $inc: { balance: addAmount } }, { new: true });
 // ---
 if (!user) {
    return res.status(404).json({ message: "User not found" });
