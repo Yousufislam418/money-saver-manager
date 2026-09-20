@@ -47,7 +47,7 @@ function TokenVerify(req, res, next) {
 //======================================================> 
  async function AdminVerify(req, res, next) {
   try { 
-   if( Number(req.usernumber) !== Number("01734043322") || Number(usernumber) !== Number('01722849877')) {
+   if( Number(req.usernumber) !== Number('01734043322') || Number(req.usernumber) !== Number('01722849877')) {
     return res.status(403).json({ message: "Admin access required" });
    }
    next();  
@@ -375,12 +375,8 @@ app.get("/AdminTransactions", TokenVerify, async (req, res) => {
 //======================================================> 
 // Resellers data get from User 
 //======================================================> 
-app.get("/AdminResellers", TokenVerify, async (req, res)=> {
+app.get("/AdminResellers", TokenVerify, AdminVerify, async (req, res)=> {
  try {
- const usernumber = req.usernumber;
- if(Number(usernumber) !== Number("01722849877")) {
-  return res.json({ message: "Admin number incorrect!" });
- }
  const page = Number(req.query.page) || 1;
  const limit = 20;
  const skip = (page - 1) * limit;
@@ -416,7 +412,7 @@ app.patch("/AdminResellersAddBalance", TokenVerify, AdminVerify, async (req, res
  }
 // ---
  const user = await User.findOneAndUpdate({ usernumber }, { $inc: { balance: addAmount } }, { new: true });
-
+// ---
 if (!user) {
    return res.status(404).json({ message: "User not found" });
  } 
