@@ -18,7 +18,7 @@ const JWT_SECRET = process.env.SECRET_TOKEN;
 //======================================================>
 // JWT Verify Middleware
 //======================================================>
-function verifyToken(req, res, next) {
+function TokenVerify(req, res, next) {
  try {
  const authHeader = req.headers.authorization;
  if (!authHeader) {
@@ -39,6 +39,24 @@ function verifyToken(req, res, next) {
   return res.status(401).json({ message: "Invalid or expire token" });
  }
 } // jwtverify end
+
+
+
+//======================================================>
+// Admin Verify
+//======================================================> 
+ async function AdminVerify(req, res, next) {
+  try { 
+   if( Number(req.usernumber) !== Number("01734043322") || Number(usernumber) !== Number('01722849877')) {
+    return res.status(403).json({ message: "Admin access required" });
+   }
+   next();  
+  } catch (error) {
+    res.json({ message: error});
+  }
+}
+
+
 //======================================================>
 // get Schema
 //======================================================>
@@ -63,7 +81,7 @@ mongoose.connect(process.env.MONGODB_URI).then(()=> {
 //======================================================>
 // Transaction data post
 //======================================================>
-app.post("/transactions", verifyToken, async(req, res)=> {
+app.post("/transactions", TokenVerify, async(req, res)=> {
  const txndatas = req.body;
  const { pin, amount } = txndatas;
   try {
@@ -113,6 +131,8 @@ app.post("/transactions", verifyToken, async(req, res)=> {
    res.status(500).json({message: error.message});
   }
 }); // Transactions End 
+
+
  
 //=========================>
 // Post -> Pin Verify
@@ -130,6 +150,8 @@ app.post("/userpin", async(req, res)=> {
  } catch (error) { res.status(500).json({ success: false, message: "Server error" });}
 
 });
+
+
 
 //======================================================>
 //  USER REGISTER 
@@ -178,10 +200,13 @@ app.post("/login", async (req, res) => {
   res.status(500).json({ message: error.message });
  }
 }); // Login end 
+
+
+
 //======================================================> 
 // Protected Profile Route
 //======================================================> 
-app.get("/profile", verifyToken, async (req, res)=> {
+app.get("/profile", TokenVerify, async (req, res)=> {
  try {
 // get usernumber from tokenVerify 
  const usernumber = req.usernumber;
@@ -279,6 +304,7 @@ app.post("/cards/buy", async (req, res) => {
 // Get request 
 //=================================================>
 
+
 //=========================================>
 // Transaction data get
 //=========================================>
@@ -325,7 +351,7 @@ app.put('/users/:id', async(req,res)=> {
 //=========================================>
 // Admin Transaction data get
 //=========================================>
-app.get("/AdminTransactions", verifyToken, async (req, res) => {
+app.get("/AdminTransactions", TokenVerify, async (req, res) => {
  try {
   const usernumber = req.usernumber;
  if(Number(usernumber) === Number('01734043322')) {
@@ -342,11 +368,14 @@ app.get("/AdminTransactions", verifyToken, async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: "Server error" });
   }
-});
+}); // Admin Transaction get data end 
+
+
+
 //======================================================> 
 // Resellers data get from User 
 //======================================================> 
-app.get("/AdminResellers", verifyToken, async (req, res)=> {
+app.get("/AdminResellers", TokenVerify, async (req, res)=> {
  try {
  const usernumber = req.usernumber;
  if(Number(usernumber) !== Number("01722849877")) {
@@ -366,41 +395,41 @@ app.get("/AdminResellers", verifyToken, async (req, res)=> {
  } catch (error) {
   res.status(500).json({ message: error.message }); 
  }
-}); // Resellers get data end
+}); // Resellers get data end 
+
+
+
 //======================================================>
 // Resellers Add Balance 
 //======================================================> 
-app.patch("/AdminResellersAddBalance", verifyToken, async (req, res) => {
+app.patch("/AdminResellersAddBalance", TokenVerify, AdminVerify, async (req, res) => {
  try {
-  const { usernumber, pin, amount } = req.body;
-
- if (!usernumber || !pin || amount === undefined) {
-   return res.status(400).json({ message: "usernumber, pin and amount are required" });
+  const { usernumber, amount } = req.body;
+// ---
+ if (!usernumber || amount === undefined) {
+   return res.status(400).json({ message: "usernumber and amount are required" });
  }
-
+// ---
  const addAmount = Number(amount);
  if (!Number.isFinite(addAmount) || addAmount <= 0) {
    return res.status(400).json({ message: "Invalid amount" });
  }
+// ---
+ const user = await User.findOneAndUpdate({ usernumber }, { $inc: { balance: addAmount } }, { new: true });
 
- const user = await User.findOne({ usernumber });
- if (!user) {
+if (!user) {
    return res.status(404).json({ message: "User not found" });
  } 
-
- const pinMatch = await bcrypt.compare(pin, user.pin);
- if (!pinMatch) { 
-  return res.status(401).json({ message: "Invalid PIN" });
- } 
- 
-   user.balance += addAmount;
-   await user.save();
-
- res.status(200).json({ message: "Update balance Successfully", balance: user.balance });
- } catch (err) {
-  res.status(500).json({ message: err });
+// ---
+ res.status(200).json({ message: "Update balance Successfully", balance: user.balance }); 
+// ---
+ } catch (error) {
+  res.status(500).json({ message: error });
   }
-}); // ResellersAddBalance end
+}); // ResellersAddBalance end 
+
+
+
 //======================================================>
 //======================================================>
 //-------------------------------------------------------------->
