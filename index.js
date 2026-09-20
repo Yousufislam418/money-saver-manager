@@ -47,7 +47,7 @@ function TokenVerify(req, res, next) {
 //======================================================> 
  async function AdminVerify(req, res, next) {
   try { 
-   if( Number(req.usernumber) !== Number('01734043322') || Number(req.usernumber) !== Number('01722849877')) {
+   if(req.usernumber !== "01722849877") {
     return res.status(403).json({ message: "Admin access required" });
    }
    next();  
