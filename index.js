@@ -12,6 +12,9 @@ app.use(cors({
   origin: ["http://127.0.0.1:5500"]
 }));
 //======================================================> 
+
+
+//======================================================> 
 // Get token from dotenv file
 //======================================================> 
 const JWT_SECRET = process.env.SECRET_TOKEN;
@@ -31,12 +34,12 @@ function TokenVerify(req, res, next) {
  }
 // Verify token
  const decoded = jwt.verify(token, JWT_SECRET);
-// usernumber -> this usernumber will be use next route
- req.usernumber = decoded.usernumber;
+// userid -> this usernumber will be use next route
+ req.userid = decoded.userid;
  next();
 // catch -> get error message
- } catch (err) {
-  return res.status(401).json({ message: "Invalid or expire token" });
+ } catch (error) {
+  return res.status(401).json({ message: error });
  }
 } // jwtverify end
 
@@ -47,12 +50,22 @@ function TokenVerify(req, res, next) {
 //======================================================> 
  async function AdminVerify(req, res, next) {
   try { 
-   if(req.usernumber !== "01722849877") {
-    return res.status(403).json({ message: "Admin access required" });
-   }
+// get userid from tokenVerify 
+ const userid = req.userid;
+// find user to database 
+ const user = await User.findById(userid).select("usernumber");
+ if (!user) {
+  return res.status(404).json({ message: "User not found" });
+ }
+ if(user.usernumber !== '01734043322') {
+  return res.status(403).json({ message: "Admin access required" });
+ } 
+ req.usernumber = user.usernumber; 
+// -------->
    next();  
+// -------->
   } catch (error) {
-    res.json({ message: error});
+    res.json({ message: error });
   }
 }
 
@@ -76,7 +89,10 @@ mongoose.connect(process.env.MONGODB_URI).then(()=> {
   console.log("MongoDB connected Successfully");
 }).catch((error)=> {
   console.error("Mongodb connection error:", error);
-}); // mongoose connect end
+}); // mongoose connect end 
+//======================================================>
+
+
 
 //======================================================>
 // Transaction data post
@@ -98,7 +114,7 @@ app.post("/transactions", TokenVerify, async(req, res)=> {
   try {
    session.startTransaction();
 // Find user using usernumber
- const user = await User.findOne({ usernumber: req.usernumber }).session(session);
+ const user = await User.findById({ userid: req.userid }).session(session);
   if (!user) {
     await session.abortTransaction();
     return res.status(404).json({message: "User not found"});
@@ -117,7 +133,7 @@ app.post("/transactions", TokenVerify, async(req, res)=> {
  user.balance = user.balance - Number(withdrawAmount);
   await user.save({ session });
 // Save transaction
- const result = await Transaction.create([{...txndatas, usernumber: user.usernumber, balance: user.balance}], { session });
+ const result = await Transaction.create([{...txndatas, usernumber: user.usernumber, balance: user.balance, userid: user._id}], { session });
 // Everything successful
  await session.commitTransaction(); 
   res.status(200).json({message: "Transaction Successfully", txndata: result, balance: user.balance});
@@ -161,7 +177,7 @@ app.post("/register", async (req, res) => {
   const userdatas = req.body;
   const { usernumber, password, pin } = userdatas;
 // Check user already exists
-  const existingUser = await User.findOne({ usernumber });
+  const existingUser = await User.findOne({ usernumber }).select("usernumber");
   if (existingUser) {
     return res.status(400).json({ message: "User already exists" });
   }
@@ -177,9 +193,12 @@ app.post("/register", async (req, res) => {
  } catch (error) { 
   res.status(500).json({ message: error.message });
  }
-}); // Register end
+}); // Register end 
+
+
+
 //======================================================>
-// Login 
+// Login -> Complete
 //======================================================> 
 app.post("/login", async (req, res) => {
  try {
@@ -193,8 +212,8 @@ app.post("/login", async (req, res) => {
  if (!passwordMatch) {
   return res.status(401).json({ message: "Invalid password" });
  }
- const token = jwt.sign({ usernumber: user.usernumber }, JWT_SECRET, { expiresIn: "30d" });
- res.json({ message: "Login Successfully", userdatas: user, token: token });
+ const token = jwt.sign({ userid: user._id }, JWT_SECRET, { expiresIn: "30d" });
+ res.json({ message: "Login Successfully", token: token });
 // catch -> get error message
  } catch (error) {
   res.status(500).json({ message: error.message });
@@ -204,14 +223,14 @@ app.post("/login", async (req, res) => {
 
 
 //======================================================> 
-// Protected Profile Route
+// Protected Profile Route --> Complete
 //======================================================> 
 app.get("/profile", TokenVerify, async (req, res)=> {
  try {
-// get usernumber from tokenVerify 
- const usernumber = req.usernumber;
+// get userid from tokenVerify 
+ const userid = req.userid;
 // find user to database 
- const user = await User.findOne({ usernumber: usernumber }).select("-password -pin");
+ const user = await User.findById(userid).select("-password -pin");
  if (!user) {
   return res.status(404).json({ message: "User not found" });
  }
@@ -308,9 +327,13 @@ app.post("/cards/buy", async (req, res) => {
 //=========================================>
 // Transaction data get
 //=========================================>
-app.get("/transactions", async (req, res) => {
+app.get("/transactions", TokenVerify, async (req, res) => {
  try {
-  const usernumber = req.usernumber;
+  const userid = req.userid;
+  const usernumber = await User.findById(userid).select("usernumber");
+  if(!usernumber) {
+    return res.json({ message: "User not found!"});
+  }
   const page = Number(req.query.page) || 1;
   const limit = 10;
   const skip = (page - 1) * limit;

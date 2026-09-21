@@ -8,7 +8,8 @@ const transactionSchema = new mongoose.Schema({
     date: { type: Date, default: Date.now, expires: 2592000 },
     status: { type: String, required: true },
     balance: { type: Number, required: true },
-    txn: { type: Number, unique: true }
+    txn: { type: Number, unique: true },
+    userid: { type: String } 
 },{
     versionKey: false,
     collection: "transactions"

@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     location: { type: String },
     date: { type: Number, default: Date.now },
-    status: { type: String },
+    status: { type: String, default: "Active" },
     balance: { type: Number, required: true },
     pin: { type: String, required: true }
 },{
