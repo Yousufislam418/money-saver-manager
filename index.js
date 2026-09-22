@@ -3,13 +3,15 @@ const cors = require("cors");
 const mongoose = require('mongoose');
 const port = process.env.PORT || 3000;
 const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 const bcrypt = require("bcrypt");
 const app = express();
 require("dotenv").config();
 app.use(express.json());
+app.use(cookieParser()); 
 // cors use
 app.use(cors({ 
-  origin: ["http://127.0.0.1:5500"]
+  origin: ["http://127.0.0.1:5500","http://127.0.0.1:5501"]
 }));
 //======================================================> 
 
@@ -19,29 +21,21 @@ app.use(cors({
 //======================================================> 
 const JWT_SECRET = process.env.SECRET_TOKEN;
 //======================================================>
-// JWT Verify Middleware
+// Token Verify Middleware  --> Complete
 //======================================================>
 function TokenVerify(req, res, next) {
- try {
- const authHeader = req.headers.authorization;
- if (!authHeader) {
-  return res.status(401).json({ message: "Token Required" });
+ const usertokenid = req.cookies.UserToken;
+ if (!usertokenid) {
+   return res.status(401).json({ message: "Please login" });
  }
-// Bearer TOKEN
- const token = authHeader.split(" ")[1];
- if (!token) {
-  return res.status(401).json({ message: "Token Required" });
- }
-// Verify token
- const decoded = jwt.verify(token, JWT_SECRET);
-// userid -> this usernumber will be use next route
- req.userid = decoded.userid;
- next();
-// catch -> get error message
+  try {
+  const decoded = jwt.verify( usertokenid, JWT_SECRET );
+  req.userId = decoded.userId;
+   next(); 
  } catch (error) {
-  return res.status(401).json({ message: error });
+   return res.status(401).json({ message: error });
  }
-} // jwtverify end
+} // TokenVerify End
 
 
 
@@ -172,7 +166,7 @@ app.post("/userpin", async(req, res)=> {
 //======================================================>
 //  USER REGISTER 
 //======================================================>
-app.post("/register", async (req, res) => {
+app.post("/UserRegister", async (req, res) => {
  try {
   const userdatas = req.body;
   const { usernumber, password, pin } = userdatas;
@@ -200,35 +194,37 @@ app.post("/register", async (req, res) => {
 //======================================================>
 // Login -> Complete
 //======================================================> 
-app.post("/login", async (req, res) => {
+app.post("/UserLogin", async (req, res) => {
  try {
- const { usernumber, password } = req.body;
-// find user
- const user = await User.findOne({ usernumber });
- if (!user) {
-  return res.status(401).json({ message: "User not found!" });
- }
- const passwordMatch = await bcrypt.compare( password, user.password );
- if (!passwordMatch) {
-  return res.status(401).json({ message: "Invalid password" });
- }
- const token = jwt.sign({ userid: user._id }, JWT_SECRET, { expiresIn: "30d" });
- res.json({ message: "Login Successfully", token: token });
-// catch -> get error message
- } catch (error) {
-  res.status(500).json({ message: error.message });
- }
-}); // Login end 
+  const { usernumber, password } = req.body;
+  const user = await User.findOne({ usernumber });
+  if (!user) {
+    return res.status(401).json({ message: "User not found" }); 
+  }
+  const matchPassword = await bcrypt.compare(password, user.password);
+  if (!matchPassword) {
+    return res.status(401).json({ message: "Invalid Password" });
+  }
+  const usertokenid = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: "30d" });
+  
+  res.cookie("UserToken", usertokenid, { httpOnly: true, secure: false, sameSite: "lax", maxAge: 2592000000 });
+
+  res.json({ message: "Login Successfully" });
+
+ } catch (error) { 
+   res.status(500).json({ message: error }); 
+ } 
+}); // Login End
 
 
 
 //======================================================> 
 // Protected Profile Route --> Complete
 //======================================================> 
-app.get("/profile", TokenVerify, async (req, res)=> {
+app.get("/Profile", TokenVerify, async (req, res)=> {
  try {
 // get userid from tokenVerify 
- const userid = req.userid;
+ const userid = req.userId;
 // find user to database 
  const user = await User.findById(userid).select("-password -pin");
  if (!user) {
