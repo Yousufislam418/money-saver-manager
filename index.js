@@ -31,11 +31,11 @@ const JWT_SECRET = process.env.SECRET_TOKEN;
 // Token Verify Middleware  --> Complete
 //======================================================>
 function TokenVerify(req, res, next) {
+ try { 
  const usertokenid = req.cookies.UserToken;
  if (!usertokenid) {
    return res.status(401).json({ message: "Please login" });
  }
-  try {
   const decoded = jwt.verify( usertokenid, JWT_SECRET );
   req.userId = decoded.userId;
    next(); 
@@ -214,7 +214,7 @@ app.post("/UserLogin", async (req, res) => {
   }
   const usertokenid = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: "30d" });
   
-  res.cookie("UserToken", usertokenid, { httpOnly: true, secure: true, sameSite: 'none', maxAge: 2592000000 });
+  res.cookie("UserToken", usertokenid, { httpOnly: false, secure: false, sameSite: 'none', maxAge: 2592000000 });
 
   res.json({ message: "Login Successfully" });
 
