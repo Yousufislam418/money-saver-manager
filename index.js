@@ -150,6 +150,8 @@ app.post("/Transactions", TokenVerify, async(req, res)=> {
 }); // Transactions Post End 
 
 
+
+
 //=========================================>
 // Transaction data get
 //=========================================>
@@ -159,8 +161,8 @@ app.get("/Transactions", TokenVerify, async (req, res) => {
   const page = Number(req.query.page) || 1;
   const limit = 10;
   const skip = (page - 1) * limit;
-  const txndatas = await Transaction.find({_id: userid}).sort({ date: -1 }).skip(skip).limit(limit);
-  const total = await Transaction.countDocuments({ _id: userid });
+  const txndatas = await Transaction.find({ userid }).sort({ date: -1 }).skip(skip).limit(limit);
+  const total = await Transaction.countDocuments({ userid });
   const hasMore = skip + txndatas.length < total;
   res.json({ txndatas, page, total, hasMore });
   } catch (error) {
@@ -279,7 +281,7 @@ app.post("/UserLogout", (req, res) => {
 //=========================================>
 // Post -> Cards data Add
 //=========================================>
-app.post("/cards", async (req, res) => {
+app.post("/Cards", TokenVerify, async (req, res) => {
  try {
  const carddatas = req.body;
  const { cardnumber } = carddatas;
@@ -291,34 +293,36 @@ app.post("/cards", async (req, res) => {
   const newcards = new Cards(carddatas);
   const result = await newcards.save();
   res.status(201).json({ message: result });
- } catch (err) {
-   res.status(500).json({ error: err.message });
+ } catch (error) {
+   res.status(500).json({ message: error });
  }
 }); 
 
 //===========================================>
 // BUY CARD
 //===========================================>
-app.post("/cards/buy", async (req, res) => {
+app.post("/Cards/buy", TokenVerify, async (req, res) => {
  try {
   const { cardbrandname, usernumber, pin } = req.body;
+  const userid = req.userId;
 // Check input
  if (!cardbrandname || !usernumber || !pin) {
   return res.status(400).json({message: "Pin are required"});
  }
 // Find User
- const user = await User.findOne({usernumber: usernumber});
+ const user = await User.findById(userid).select("usernumber balance pin");
  if (!user) {
    return res.status(404).json({message: "User not found"});
  }
-// PIN match
- if (user.pin !== Number(pin)) {
-  return res.status(401).json({message: "Invalid PIN"});
+ // Pin match
+ const pinMatch = await bcrypt.compare(pin, user.pin);
+ if(!pinMatch) {
+   return res.status(401).json({message: "Wrong Pin"});
  }
 // Find Card
  const card = await Cards.findOne({cardbrandname: cardbrandname, status: "available"});
  if (!card) {
-   return res.status(404).json({ message: "Card not found" });
+   return res.status(404).json({ message: "Card not Available" });
  }
 // Card price
  const price = Number(card.price);
@@ -333,8 +337,9 @@ app.post("/cards/buy", async (req, res) => {
  user.balance = Number(user.balance) - price;
 // Assign card to user
  card.usernumber = usernumber;
- card.status = "sold";
-
+ card.userid = user._id;
+ card.status = "Sold";
+// -------------
  const cardnumber = card.cardnumber;
 // Save User 
  await user.save();
@@ -342,16 +347,16 @@ app.post("/cards/buy", async (req, res) => {
  await card.save();
 // Create Transaction
  const newcarddatas = {brandname: cardbrandname, usernumber, number: cardnumber, amount: price, status: "Complete", balance: user.balance };
- await Transaction.create(newcarddatas);
-
+ await Transaction.create(newcarddatas); 
 // Success response
  res.status(200).json({ message: "Card purchased successfully", carddatas: newcarddatas});
 
- } catch (err) {
-   res.status(500).json({ message: "Server error", error: err.message });
+ } catch (error) {
+   res.status(500).json({ message: error });
  }
+}); // BUY CARD End 
 
-}); // BUY CARD End
+
 
 //=================================================> 
 // Get request 

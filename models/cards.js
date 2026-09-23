@@ -7,7 +7,8 @@ const cardsSchema = new mongoose.Schema({
  price: { type: Number, required: true },
  date: { type: Number, default: Date.now },
  expires: { type: Date, expires: 2592000 },
- status: { type: String, default: "available" },
+ status: { type: String, default: "Available" },
+ userid: { type: String },
  txn: { type: Number, unique: true }
 },{
     versionKey: false,
