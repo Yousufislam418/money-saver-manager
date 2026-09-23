@@ -9,11 +9,18 @@ const app = express();
 require("dotenv").config();
 app.use(express.json());
 app.use(cookieParser()); 
-// cors use
-app.use(cors({ 
-  origin: ["http://127.0.0.1:5500","http://127.0.0.1:5501"]
-}));
 //======================================================> 
+// cors use
+//======================================================> 
+const allowedOrigins = ["http://127.0.0.1:5500","http://127.0.0.1:5501"];
+app.use(cors({ origin: function (origin, callback) {
+ if (!origin || allowedOrigins.includes(origin)) {
+   callback(null, true);
+ } else {
+ callback(new Error("Not allowed by CORS"));
+ }
+ }, credentials: true
+}));
 
 
 //======================================================> 
@@ -234,7 +241,17 @@ app.get("/Profile", TokenVerify, async (req, res)=> {
  } catch (error) {
   res.status(500).json({ message: error.message });
  }
-}); // Profile end
+}); // Profile end 
+
+
+
+//======================================================> 
+// User Logout --> 
+//======================================================> 
+app.post("/UserLogout", (req, res) => {
+ res.clearCookie("UserToken");
+ res.json({ message: "Logged out" });
+});
 //======================================================>
 //======================================================>
 
