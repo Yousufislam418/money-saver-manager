@@ -154,19 +154,23 @@ app.post("/transactions", TokenVerify, async(req, res)=> {
 //=========================>
 // Post -> Pin Verify
 //=========================>
-app.post("/userpin", async(req, res)=> {
- const { userid, pin } = req.body;
- const user = await User.findOne({ _id: userid, pin: pin });
+app.post("/UserPin", TokenVerify, async(req, res)=> {
  try {
+  const { pin } = req.body;
+  const user = await User.findById(req.userId).select("pin");
  if (!user) {
-   return res.status(401).json({ success: false, message: "Pin is incorrect" });
+   return res.status(401).json({ message: "Pin is incorrect" });
+  } 
+ const matchPin = await bcrypt.compare(pin, user.pin);
+  if (!matchPin) {
+    return res.status(401).json({ message: "Invalid Pin" });
   }
  // Only send the information you need
- res.json({ success: true });
+ res.json({ message: "Pin verify Successfully" });
 
- } catch (error) { res.status(500).json({ success: false, message: "Server error" });}
-
-});
+ } catch (error) { 
+  res.status(500).json({ message: error });}
+}); // pin verify end  
 
 
 
@@ -199,7 +203,7 @@ app.post("/UserRegister", async (req, res) => {
 
 
 //======================================================>
-// Login -> Complete
+// Login ---> Complete
 //======================================================> 
 app.post("/UserLogin", async (req, res) => {
  try {
