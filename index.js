@@ -98,7 +98,7 @@ mongoose.connect(process.env.MONGODB_URI).then(()=> {
 //======================================================>
 // Transaction data post
 //======================================================>
-app.post("/transactions", TokenVerify, async(req, res)=> {
+app.post("/Transactions", TokenVerify, async(req, res)=> {
  const txndatas = req.body;
  const { pin, amount } = txndatas;
   try {
@@ -115,7 +115,7 @@ app.post("/transactions", TokenVerify, async(req, res)=> {
   try {
    session.startTransaction();
 // Find user using usernumber
- const user = await User.findById({ userid: req.userid }).session(session);
+ const user = await User.findById({ userid: req.userId }).session(session);
   if (!user) {
     await session.abortTransaction();
     return res.status(404).json({message: "User not found"});
@@ -152,7 +152,7 @@ app.post("/transactions", TokenVerify, async(req, res)=> {
 
  
 //=========================>
-// Post -> Pin Verify
+// Pin Verify
 //=========================>
 app.post("/UserPin", TokenVerify, async(req, res)=> {
  try {
@@ -344,22 +344,18 @@ app.post("/cards/buy", async (req, res) => {
 //=========================================>
 // Transaction data get
 //=========================================>
-app.get("/transactions", TokenVerify, async (req, res) => {
+app.get("/Transactions", TokenVerify, async (req, res) => {
  try {
-  const userid = req.userid;
-  const usernumber = await User.findById(userid).select("usernumber");
-  if(!usernumber) {
-    return res.json({ message: "User not found!"});
-  }
+  const userid = req.userId;
   const page = Number(req.query.page) || 1;
   const limit = 10;
   const skip = (page - 1) * limit;
-  const txndatas = await Transaction.find({ usernumber }).sort({ date: -1 }).skip(skip).limit(limit);
-  const total = await Transaction.countDocuments({ usernumber });
+  const txndatas = await Transaction.find({_id: userid}).sort({ date: -1 }).skip(skip).limit(limit);
+  const total = await Transaction.countDocuments({ _id: userid });
   const hasMore = skip + txndatas.length < total;
   res.json({ txndatas, page, total, hasMore });
   } catch (error) {
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ message: error });
   }
 });
 
