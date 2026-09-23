@@ -214,7 +214,7 @@ app.post("/UserLogin", async (req, res) => {
   }
   const usertokenid = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: "30d" });
   
-  res.cookie("UserToken", usertokenid, { httpOnly: true, secure: false, sameSite: "lax", maxAge: 2592000000 });
+  res.cookie("UserToken", usertokenid, { httpOnly: true, secure: true, sameSite: 'none', maxAge: 2592000000 });
 
   res.json({ message: "Login Successfully" });
 
