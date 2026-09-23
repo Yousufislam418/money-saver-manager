@@ -292,7 +292,7 @@ app.post("/Cards", TokenVerify, async (req, res) => {
  }
   const newcards = new Cards(carddatas);
   const result = await newcards.save();
-  res.status(201).json({ message: result });
+  res.status(201).json({ message: "Card Added Successfully", carddata: result });
  } catch (error) {
    res.status(500).json({ message: error });
  }
@@ -303,10 +303,10 @@ app.post("/Cards", TokenVerify, async (req, res) => {
 //===========================================>
 app.post("/Cards/buy", TokenVerify, async (req, res) => {
  try {
-  const { cardbrandname, usernumber, pin } = req.body;
+  const { cardbrandname, pin } = req.body;
   const userid = req.userId;
 // Check input
- if (!cardbrandname || !usernumber || !pin) {
+ if (!cardbrandname || !pin) {
   return res.status(400).json({message: "Pin are required"});
  }
 // Find User
