@@ -12,7 +12,7 @@ app.use(cookieParser());
 //======================================================> 
 // cors use
 //======================================================> 
-const allowedOrigins = ["http://127.0.0.1:5500","http://127.0.0.1:5501"];
+const allowedOrigins = ["http://127.0.0.1:5500","http://127.0.0.1:5501","https://yousufislam418.github.io/msm.com"];
 app.use(cors({ origin: function (origin, callback) {
  if (!origin || allowedOrigins.includes(origin)) {
    callback(null, true);
