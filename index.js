@@ -184,8 +184,7 @@ app.post("/UserPin", TokenVerify, async(req, res)=> {
   if (!matchPin) {
     return res.status(401).json({ message: "Invalid Pin" });
   }
- // Only send the information you need
- res.json({ message: "Pin verify Successfully" });
+ res.json({ message: "Pin Verify Successfully" });
 
  } catch (error) { 
   res.status(500).json({ message: error });}
@@ -271,9 +270,13 @@ app.get("/Profile", TokenVerify, async (req, res)=> {
 //======================================================> 
 // User Logout --> 
 //======================================================> 
-app.post("/UserLogout", (req, res) => {
- res.clearCookie("UserToken");
- res.json({ message: "Logged out" });
+app.post("/UserLogout", (req, res) => { 
+ try {
+  res.clearCookie("UserToken");
+  res.json({ message: "Logout Successfully" });
+ } catch (error) {
+  res.json({ message: error });
+ }
 });
 //======================================================>
 //======================================================>
