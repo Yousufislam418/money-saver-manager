@@ -320,7 +320,7 @@ app.post("/Cards/buy", TokenVerify, async (req, res) => {
    return res.status(401).json({message: "Wrong Pin"});
  }
 // Find Card
- const card = await Cards.findOne({cardbrandname: cardbrandname, status: "available"});
+ const card = await Cards.findOne({cardbrandname: cardbrandname, status: "Available"});
  if (!card) {
    return res.status(404).json({ message: "Card not Available" });
  }
@@ -345,10 +345,10 @@ app.post("/Cards/buy", TokenVerify, async (req, res) => {
 // Save Card
  await card.save();
 // Create Transaction
- const newcarddatas = {brandname: cardbrandname, usernumber: user.usernumber, number: card.cardnumber, amount: price, status: "Complete", balance: user.balance };
+ const newcarddatas = { brandname: cardbrandname, usernumber: user.usernumber, number: card.cardnumber, amount: price, status: "Complete", balance: user.balance };
  await Transaction.create(newcarddatas); 
 // Success response
- res.status(200).json({ message: "Card Purchase Successfully", carddatas: newcarddatas});
+ res.status(200).json({ message: "Card Purchase Successfully", carddatas: newcarddatas });
 
  } catch (error) {
    res.status(500).json({ message: error });
